@@ -4,12 +4,15 @@ class Walker{
 
 private:
         int x,y;
+        int width, height;
 
 public:
 
-        Walker(int width,int height){
-            x = width/2;
-            y = height/2;
+       Walker(int windowWidth, int windowHeight) {
+            width = windowWidth;
+            height = windowHeight;
+            x = width / 2;
+            y = height / 2;
         }
 
         void render(){
@@ -31,6 +34,12 @@ public:
             else{
                 y--;
             }
+
+            if (x < 0) x = 0;
+            if (x >= width) x = width - 1;
+            if (y < 0) y = 0;
+            if (y >= height) y = height - 1;
+
         }
         
 
