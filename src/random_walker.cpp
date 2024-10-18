@@ -1,130 +1,82 @@
 #include <raylib.h>
+#include <vector>
 
-class Walker{
-
-private:
-        int x,y;
-        int xChanged, yChanged;
-        int increased, decreased;
-
-public:
-
-        Walker(int width,int height){
-            x = width/2;
-            y = height/2;
-            xChanged = 0;
-            yChanged = 0;
-            increased = 0;
-            decreased = 0;
-        }
-
-        void render(){
-            Color currentPixel = WHITE;
-            Color prevOnePixel = {255, 255, 255, 215};
-            Color prevTwoPixel = {255, 255, 255, 175};
-            Color prevThreePixel = {255, 255, 255, 135};
-            Color prevFourPixel = {255, 255, 255, 95};
-            Color prevFivePixel = {255, 255, 255, 55};
-            Color prevSixPixel = {255, 255, 255, 15};
-
-            DrawPixel(x, y, currentPixel); // to color the current pixel solid white
-            
-            // if x coord changes, create a fading white trail in a direction depending on
-            // whether x increased or decreased
-            if(xChanged) {
-                if(increased) {
-                    DrawPixel(x - 1, y, prevOnePixel);
-                    DrawPixel(x - 2, y, prevTwoPixel);
-                    DrawPixel(x - 3, y, prevThreePixel);
-                    DrawPixel(x - 4, y, prevFourPixel);
-                    DrawPixel(x - 5, y, prevFivePixel);
-                    DrawPixel(x - 6, y, prevSixPixel);
-                    increased = 0;
-                }
-                else if(decreased) {
-                    DrawPixel(x + 1, y, prevOnePixel);
-                    DrawPixel(x + 2, y, prevTwoPixel);
-                    DrawPixel(x + 3, y, prevThreePixel);
-                    DrawPixel(x + 4, y, prevFourPixel);
-                    DrawPixel(x + 5, y, prevFivePixel);
-                    DrawPixel(x + 6, y, prevSixPixel);
-                    decreased = 0;
-                }
-                xChanged = 0;
-            }
-            // if y coord changes, create a fading white trail in a direction depending on
-            // whether y increased or decreased
-            else if(yChanged) {
-                if(increased) {
-                    DrawPixel(x, y - 1, prevOnePixel);
-                    DrawPixel(x, y - 2, prevTwoPixel);
-                    DrawPixel(x, y - 3, prevThreePixel);
-                    DrawPixel(x, y - 4, prevFourPixel);
-                    DrawPixel(x, y - 5, prevFivePixel);
-                    DrawPixel(x, y - 6, prevSixPixel);
-                    increased = 0;
-                }
-                else if(decreased) {
-                    DrawPixel(x, y + 1, prevOnePixel);
-                    DrawPixel(x, y + 2, prevTwoPixel);
-                    DrawPixel(x, y + 3, prevThreePixel);
-                    DrawPixel(x, y + 4, prevFourPixel);
-                    DrawPixel(x, y + 5, prevFivePixel);
-                    DrawPixel(x, y + 6, prevSixPixel);
-                    decreased = 0;
-                }
-                yChanged = 0;
-            }
-        }
-
-        void step(){
-            int choice = GetRandomValue(0,3);
-            
-            if(choice == 0){
-                x++;
-                xChanged = 1;
-                increased = 1;
-            }
-            else if (choice == 1){
-                x--;
-                xChanged = 1;
-                decreased = 1;
-            }
-            else if (choice == 2){
-                y++;
-                yChanged = 1;
-                increased = 1;
-            }
-            else{
-                y--;
-                yChanged = 1;
-                decreased = 1;
-            }
-        }
-        
-
-        
+struct trailInfo {
+    int x, y;
+    float opacity; // store previous positions' opacity
 };
 
+class Walker {
+private:
+    int x, y;
+    std::vector<trailInfo> trail;
+    int maxTrailLen = 4; // setting the max trail length
 
-int main(void){
+public:
+    Walker(int width, int height) {
+        x = width / 2;
+        y = height / 2;
+    }
+
+    void render() {
+        DrawPixel(x, y, WHITE);
+
+        // draw the white fading trail
+        for (auto& segment : trail) {
+            Color trailColor = {255, 255, 255, (unsigned char)segment.opacity};
+            DrawPixel(segment.x, segment.y, trailColor);
+        }
+    }
+
+    void step() {
+        // current position has full opacity
+        trail.push_back({x, y, 255.0f});
+
+        // remove the oldest segment to limit the trail size
+        if (trail.size() > maxTrailLen) trail.erase(trail.begin());
+
+        // reduce opacity over time
+        for (auto& segment : trail) {
+            segment.opacity -= 40.0f;
+            if (segment.opacity < 0.0f) segment.opacity = 0.0f;
+        }
+
+        int choice = GetRandomValue(0, 3);
+
+        if (choice == 0){
+            x++;
+        }
+        else if (choice == 1){
+            x--;
+        }
+        else if (choice == 2){
+            y++;
+        }
+        else{ 
+            y--;
+        }
+    }
+};
+
+int main(void) {
     const int width = 800;
     const int height = 600;
-    InitWindow(width, height, "Random walker :D");
+    InitWindow(width, height, "Random Walker with Fading Trail");
     SetTargetFPS(60);
-    
-    Walker w(width,height);
-    
-    int i = 1;
-    while(!WindowShouldClose()){
+
+    Walker w(width, height);
+
+    while (!WindowShouldClose()) {
         w.step();
         BeginDrawing();
+        ClearBackground(BLACK); // clear the screen each frame
         w.render();
         EndDrawing();
     }
 
     CloseWindow();
     return 0;
+
 
 
 }
