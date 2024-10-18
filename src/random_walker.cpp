@@ -6,10 +6,11 @@ private:
         int x,y;
 
 public:
-
-        Walker(int width,int height){
-            x = width/2;
-            y = height/2;
+    i  void NewGame() {
+            Walker(int width, int height)
+            x = width / 2;
+            y = height / 2;
+            }
         }
 
         void render(){
@@ -32,10 +33,10 @@ public:
                 y--;
             }
         }
-        
 
-        
-};
+        if IsMouseButtonPressed(KEY_R) {
+            NewGame();
+        }
 
 
 int main(void){
