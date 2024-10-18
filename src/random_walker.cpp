@@ -10,7 +10,7 @@ class Walker {
 private:
     int x, y;
     std::vector<trailInfo> trail;
-    int maxTrailLen = 4; // setting the max trail length
+    int maxTrailLen = 40; // setting the max trail length
 
 public:
     Walker(int width, int height) {
@@ -37,7 +37,7 @@ public:
 
         // reduce opacity over time
         for (auto& segment : trail) {
-            segment.opacity -= 40.0f;
+            segment.opacity -= 4.0f;
             if (segment.opacity < 0.0f) segment.opacity = 0.0f;
         }
 
@@ -66,8 +66,12 @@ int main(void) {
 
     Walker w(width, height);
 
+    // to slow down the walker, create a delay by making the walker take a step every 6 frames
+    int frameNum = 0;
+
     while (!WindowShouldClose()) {
-        w.step();
+        frameNum++;
+        if(frameNum % 6 == 0) w.step(); // the walker takes a step every 6 frames`
         BeginDrawing();
         ClearBackground(BLACK); // clear the screen each frame
         w.render();
